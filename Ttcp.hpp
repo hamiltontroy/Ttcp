@@ -55,7 +55,7 @@ namespace ttcp
         struct sockaddr_in 
             vlisteningSocketAddress, vclientAddress;
         struct MessageInfo
-            messageInfo;
+            vmessageInfo;
         
         //Private member functions
         /* //UPDATED zeroOutAllVariables() update as necessary
@@ -145,7 +145,8 @@ namespace ttcp
         private variable vclientAddress can only be updated with a waitForAClient() or
         a setClientfd() or a connectTo();
         */
-        int receiveMessage();
+        struct MessageInfo receiveMessage(int); //sets a cap on max bytes it can receive
+        struct MessageInfo receiveMessage();    //not safe, can receive unlimited bytes
         
         int connectTo(const char*);
         int connectTo(std::string);

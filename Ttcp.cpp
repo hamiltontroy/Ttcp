@@ -206,9 +206,172 @@ int Ttcp::clientfd()
     return vclientfd;
 }
 
-int Ttcp::receiveMessage()
+struct MessageInfo Ttcp::receiveMessage(int maxBytes)
 {
-    return 0;
+    const size_t
+        PAGE_SIZE = 4096; //this can be changed based on implementation
+    char
+        *bufferStart, *temporaryPointer;
+    size_t
+        memoryAllocationCount = 0, totalCharsReceived = 0, temporaryCharsReceivedCount;
+    
+    //allocate an initial buffer
+    bufferStart = (char*)malloc(PAGE_SIZE);
+    if(bufferStart == NULL)
+    {
+        vmessageInfo.bufferStart = NULL;
+        vmessageInfo.bufferLength = 0;
+        
+        return vmessageInfo;
+    }
+    
+    memoryAllocationCount++;
+    
+    while(totalCharsReceived < maxBytes)
+    {
+        //recv into buffer
+        temporaryCharsReceivedCount = recv(vclientfd, bufferStart + totalCharsReceived, PAGE_SIZE, 0);
+        
+        //check for recv() errors
+        if(temporaryCharsReceivedCount < 1)
+        {
+            free(bufferStart);
+            
+            vmessageInfo.bufferStart = NULL;
+            vmessageInfo.bufferLength = 0;
+        
+            return vmessageInfo;
+        }
+        
+        totalCharsReceived += temporaryCharsReceivedCount;
+        temporaryCharsReceivedCount = 0;
+        
+        //check if buffer needs to be resized
+        if(totalCharsReceived == PAGE_SIZE * memoryAllocationCount)
+        {
+            memoryAllocationCount++;
+            
+            //resize buffer to a larger size to read more chars
+            temporaryPointer = (char*)realloc(bufferStart, PAGE_SIZE * memoryAllocationCount);
+            if(temporaryPointer == NULL)
+            {
+                free(bufferStart);
+                vmessageInfo.bufferStart = NULL;
+                vmessageInfo.bufferLength = 0;
+        
+                return vmessageInfo;
+            }
+            
+            bufferStart = temporaryPointer;
+            temporaryPointer = NULL;
+        }
+        else
+        {   //resize buffer to a smaller size
+            temporaryPointer = (char*)realloc(bufferStart, totalCharsReceived);
+            if(temporaryPointer == NULL)
+            {
+                free(bufferStart);
+                vmessageInfo.bufferStart = NULL;
+                vmessageInfo.bufferLength = 0;
+        
+                return vmessageInfo;
+            }
+            
+            //successfully exit
+            bufferStart = temporaryPointer;
+            temporaryPointer = NULL;
+            break;
+        }
+    }
+    
+    vmessageInfo.bufferStart = bufferStart;
+    vmessageInfo.bufferLength = totalCharsReceived;
+    
+    return vmessageInfo;
+}
+
+struct MessageInfo Ttcp::receiveMessage()
+{
+    const size_t
+        PAGE_SIZE = 4096; //this can be changed based on implementation
+    char
+        *bufferStart, *temporaryPointer;
+    size_t
+        memoryAllocationCount = 0, totalCharsReceived = 0, temporaryCharsReceivedCount;
+    
+    //allocate an initial buffer
+    bufferStart = (char*)malloc(PAGE_SIZE);
+    if(bufferStart == NULL)
+    {
+        vmessageInfo.bufferStart = NULL;
+        vmessageInfo.bufferLength = 0;
+        
+        return vmessageInfo;
+    }
+    
+    memoryAllocationCount++;
+    
+    while(1)
+    {
+        //recv into buffer
+        temporaryCharsReceivedCount = recv(vclientfd, bufferStart + totalCharsReceived, PAGE_SIZE, 0);
+        
+        //check for recv() errors
+        if(temporaryCharsReceivedCount < 1)
+        {
+            free(bufferStart);
+            
+            vmessageInfo.bufferStart = NULL;
+            vmessageInfo.bufferLength = 0;
+        
+            return vmessageInfo;
+        }
+        
+        totalCharsReceived += temporaryCharsReceivedCount;
+        temporaryCharsReceivedCount = 0;
+        
+        //check if buffer needs to be resized
+        if(totalCharsReceived == PAGE_SIZE * memoryAllocationCount)
+        {
+            memoryAllocationCount++;
+            
+            //resize buffer to a larger size to read more chars
+            temporaryPointer = (char*)realloc(bufferStart, PAGE_SIZE * memoryAllocationCount);
+            if(temporaryPointer == NULL)
+            {
+                free(bufferStart);
+                vmessageInfo.bufferStart = NULL;
+                vmessageInfo.bufferLength = 0;
+        
+                return vmessageInfo;
+            }
+            
+            bufferStart = temporaryPointer;
+            temporaryPointer = NULL;
+        }
+        else
+        {   //resize buffer to a smaller size
+            temporaryPointer = (char*)realloc(bufferStart, totalCharsReceived);
+            if(temporaryPointer == NULL)
+            {
+                free(bufferStart);
+                vmessageInfo.bufferStart = NULL;
+                vmessageInfo.bufferLength = 0;
+        
+                return vmessageInfo;
+            }
+            
+            //successfully exit
+            bufferStart = temporaryPointer;
+            temporaryPointer = NULL;
+            break;
+        }
+    }
+    
+    vmessageInfo.bufferStart = bufferStart;
+    vmessageInfo.bufferLength = totalCharsReceived;
+    
+    return vmessageInfo;
 }
 
 // end
