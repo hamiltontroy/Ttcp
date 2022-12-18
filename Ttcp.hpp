@@ -76,22 +76,22 @@ namespace ttcp
         */
         void cleanup();
 
-        /* //Done makeListenerfd()
-        makeListenerfd() will make a listener fd in a non
+        /* //Done makeSocket()
+        makeSocket() will make a listener fd in a non
         listening state.
         */
-        void makeListenerfd();
+        int makeSocket();
 
         /* //Done setListenerAddr()
         setListenerAddr() will set up the listening address.
         */
-        void setListenerAddr(); //random port number
-        void setListenerAddr(int); //specific port number
+        void setTcpAddr(struct sockaddr_in &); //random port number
+        void setTcpAddr(struct sockaddr_in &, int); //specific port number
 
-        /* //Done osAllocateSocket()
+        /* //Done osBindSocket()
         tells the os to assign the socket an ip address
         */
-        bool osAllocateSocket();
+        bool osBindSocket(int &, struct sockaddr_in &);
 
         /* //Done turnListenerOn()
         tells the os to set the socket to a position where it is
@@ -156,9 +156,14 @@ namespace ttcp
         int connectTo(const char*);
         int connectTo(std::string);
         
-        /* //Not Done printMessage()
+        /* //Done printMessage()
             printMessage() will print out the message received in a buffer.
         */
         void printMessage();
+        
+        /* //Not Done printVerboseMessage()
+            printVerboseMessage() will print out the message received in a buffer.
+        */
+        void printVerboseMessage();
     };
 }

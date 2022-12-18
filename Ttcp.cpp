@@ -18,6 +18,8 @@ namespace ttcp
         memset(&vlistenerfd, 0, sizeof(vlistenerfd));
         memset(&vclientfd, 0, sizeof(vclientfd));
         memset(&vlisteningSocketAddress, 0, sizeof(vlisteningSocketAddress));
+        memset(&vclientAddress, 0, sizeof(vclientAddress));
+        memset(&vmessageInfo, 0, sizeof(struct MessageInfo));
     }
 
     void Ttcp::closeAllfds()
@@ -39,31 +41,36 @@ namespace ttcp
         zeroOutAllVariables();
     }
 
-    void Ttcp::makeListenerfd()
+    int Ttcp::makeSocket()
     {
-        vlistenerfd = socket(AF_INET, SOCK_STREAM, 0);
+        int
+            sockfd;
+        
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        
+        return sockfd;
     }
 
-    void Ttcp::setListenerAddr()
+    void Ttcp::setTcpAddr(struct sockaddr_in &tcpAddr)
     {
-        memset(&vlisteningSocketAddress, 0, sizeof(struct sockaddr_in));
-        vlisteningSocketAddress.sin_family = AF_INET;
-        vlisteningSocketAddress.sin_port = 0; //If sin_port is set to 0, the caller leaves it to the system to assign an available port.
-        vlisteningSocketAddress.sin_addr.s_addr = INADDR_ANY; //bound to all network interfaces on the host.
+        memset(&tcpAddr, 0, sizeof(struct sockaddr_in));
+        tcpAddr.sin_family = AF_INET;
+        tcpAddr.sin_port = 0; //If sin_port is set to 0, the caller leaves it to the system to assign an available port.
+        tcpAddr.sin_addr.s_addr = INADDR_ANY; //bound to all network interfaces on the host.
     }
 
-    void Ttcp::setListenerAddr(int portNumber)
+    void Ttcp::setTcpAddr(struct sockaddr_in &tcpAddr, int portNumber)
     {
-        memset(&vlisteningSocketAddress, 0, sizeof(struct sockaddr_in));
-        vlisteningSocketAddress.sin_family = AF_INET;
-        vlisteningSocketAddress.sin_port = htons((unsigned short)portNumber); //If sin_port is set to 0, the caller leaves it to the system to assign an available port.
-        vlisteningSocketAddress.sin_addr.s_addr = INADDR_ANY; //bound to all network interfaces on the host.
+        memset(&tcpAddr, 0, sizeof(struct sockaddr_in));
+        tcpAddr.sin_family = AF_INET;
+        tcpAddr.sin_port = htons((unsigned short)portNumber); //If sin_port is set to 0, the caller leaves it to the system to assign an available port.
+        tcpAddr.sin_addr.s_addr = INADDR_ANY; //bound to all network interfaces on the host.
     }
 
-    bool Ttcp::osAllocateSocket()
+    bool Ttcp::osBindSocket(int &sockfd, struct sockaddr_in &tcpAddr)
     {
         int t;
-        t = bind(vlistenerfd, (const struct sockaddr*) &vlisteningSocketAddress, sizeof(struct sockaddr_in));
+        t = bind(sockfd, (const struct sockaddr*) &tcpAddr, sizeof(struct sockaddr_in));
         
         //indicates the os failed to allocate the socket
         if(t < 0) return false;
@@ -92,7 +99,7 @@ namespace ttcp
         }
         
         //makes a default tcp socket
-        makeListenerfd();
+        vlistenerfd = makeSocket();
         
         if(vlistenerfd < 0)
         {
@@ -100,10 +107,10 @@ namespace ttcp
             return -1;
         }
         
-        setListenerAddr();
+        setTcpAddr(vlisteningSocketAddress);
         
         //assigns the address to the socket
-        if(osAllocateSocket() == false)
+        if(osBindSocket(vlistenerfd, vlisteningSocketAddress) == false)
         {
             cleanup();
             return -1;
@@ -139,7 +146,7 @@ namespace ttcp
             return -1;
         
         //makes a default tcp socket
-        makeListenerfd();
+        vlistenerfd = makeSocket();
         
         if(vlistenerfd < 0)
         {
@@ -147,10 +154,10 @@ namespace ttcp
             return -1;
         }
         
-        setListenerAddr(portNumber);
+        setTcpAddr(vlisteningSocketAddress, portNumber);
         
         //assigns the address to the socket
-        if(osAllocateSocket() == false)
+        if(osBindSocket(vlistenerfd, vlisteningSocketAddress) == false)
         {
             cleanup();
             return -1;
