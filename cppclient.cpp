@@ -11,13 +11,12 @@ int main()
         instance;
     const char
         *hello_message = "Hello Server From Client\n";
-    struct MessageInfo
-        messageInfo;
     
     instance.connectTo("127.0.0.1", 1111);
     
     write(instance.clientfd(), hello_message, strlen(hello_message));
-    messageInfo = instance.receiveMessage();
+    
+    instance.receiveMessage();
     
     instance.printMessage();
     
