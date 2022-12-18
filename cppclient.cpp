@@ -10,7 +10,7 @@ int main()
     Ttcp
         instance;
     const char
-        *hello_message = "Hello Server From Client\n";
+        *hello_message = "Hello, this is cppclient.cpp\n";
     
     instance.connectTo("127.0.0.1", 1111);
     
