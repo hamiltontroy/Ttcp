@@ -10,7 +10,7 @@ int main(void)
     Ttcp
         instance;
     const char
-        *helloMsg = "Hello Client from Server C++ program.\n";
+        *helloMsg = "Hello, this is cppserver.cpp.\n";
         
     instance.activate(1111);
 
