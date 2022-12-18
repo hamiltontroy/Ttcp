@@ -35,6 +35,7 @@ system calls.
 #include <unistd.h>
 #include <string.h> //memset
 #include <netinet/in.h> //struct sockaddr_in
+#include <arpa/inet.h> // inet_addr()
 
 namespace ttcp
 {
@@ -140,7 +141,7 @@ namespace ttcp
         */
         int clientfd();
         
-        /* //Not Done receiveMessage()
+        /* //Done receiveMessage()
         receiveMessage() will receive a message from private variable vclientAddress.
         private variable vclientAddress can only be updated with a waitForAClient() or
         a setClientfd() or a connectTo();
@@ -148,7 +149,16 @@ namespace ttcp
         struct MessageInfo receiveMessage(int); //sets a cap on max bytes it can receive
         struct MessageInfo receiveMessage();    //not safe, can receive unlimited bytes
         
+        /* //Not Done connectTo()
+            connectTo() will connect to an external ip address.
+       */
+        int connectTo(const char*, int); // ip address and port number
         int connectTo(const char*);
         int connectTo(std::string);
+        
+        /* //Not Done printMessage()
+            printMessage() will print out the message received in a buffer.
+        */
+        void printMessage();
     };
 }

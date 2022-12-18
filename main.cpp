@@ -27,20 +27,31 @@ void verbose_safe_string_print(char* string_start, int string_length)
 
 int main(void)
 {
-    Ttcp
+    ttcp::Ttcp
         server, conn;
-    struct MessageInfo
+    struct ttcp::MessageInfo
         messageInfo;
+    const char
+        *helloMsg = "Hello Client from Server C++ program.\n";
         
     server.activate(1111);
 
     conn.setClientfd(server.waitForAClient()); // takes an int fildes.
     messageInfo = conn.receiveMessage(1234); // receives message into a dynamically allocated buffer
+    
+    
+    
+    
     //conn.printMessage(); // prints a message to stdout, skips unprintable characters. use verbosePrintMessage to print full info about the message.
     //conn.deallocateMessage(); // if a message is not deallocated, a memory leak can occur. works with free();
     //conn.transmitMessage("Hello client! This is Troy!\n"); // shows const char* here, works with std::string as well.
 
     verbose_safe_string_print(messageInfo.bufferStart, messageInfo.bufferLength);
+    
+    send(conn.clientfd(), helloMsg, strlen(helloMsg), 0);
+    
+    close(server.listenerfd());
+    close(conn.clientfd());
     
     return 0;
 }
